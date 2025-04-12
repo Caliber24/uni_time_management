@@ -1,0 +1,50 @@
+{
+    "universities": [
+      {
+        "id": 1,
+        "name": " صنعتی شریف",
+        "image": "/images/1.png"
+      },
+     
+      {
+        "id": 2,
+        "name": "خلیج فارس",
+        "image": "/images/2.png"
+      },
+      {
+        "id": 3,
+        "name": "گیلان",
+        "image": "/images/3.png"
+      },
+      {
+        "id": 4,
+        "name": "اصفهان",
+        "image": "/images/4.png"
+      },
+      {
+        "id": 5,
+        "name": "صنعتی شیراز",
+        "image": "/images/5.png"
+      },
+      {
+        "id": 6,
+        "name": "سمنان",
+        "image": "/images/6.png"
+      },
+      {
+        "id": 7,
+        "name": "صنعتی اصفهان",
+        "image": "/images/7.png"
+      },
+      {
+        "id": 8,
+        "name": "تربیت مدرس",
+        "image": "/images/8.png"
+      },
+      {
+        "id": 9,
+        "name": "ارومیه",
+        "image": "/images/9.png"
+      }
+    ]
+  }
