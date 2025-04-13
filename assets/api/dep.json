@@ -1,0 +1,34 @@
+{
+    "departments": [
+      {
+        "department_code": "DEP001",
+        "department_name": "مهندسی کامپیوتر",
+        "university_id": 1,
+        "university_name": "دانشگاه خلیج فارس بوشهر"
+      },
+      {
+        "department_code": "DEP002",
+        "department_name": "مهندسی برق",
+        "university_id": 1,
+        "university_name": "دانشگاه خلیج فارس بوشهر"
+      },
+      {
+        "department_code": "DEP003",
+        "department_name": "مهندسی مکانیک",
+        "university_id": 1,
+        "university_name": "دانشگاه خلیج فارس بوشهر"
+      },
+      {
+        "department_code": "DEP004",
+        "department_name": "ریاضیات",
+        "university_id": 1,
+        "university_name": "دانشگاه خلیج فارس بوشهر"
+      },
+      {
+        "department_code": "DEP005",
+        "department_name": "فیزیک",
+        "university_id": 1,
+        "university_name": "دانشگاه خلیج فارس بوشهر"
+      }
+    ]
+  }
