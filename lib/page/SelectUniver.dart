@@ -1,7 +1,8 @@
 import 'dart:convert';
-import 'package:uni_time_management/model/univercity_model.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:uni_time_management/model/univercity_model.dart';
 
 class UniversityPage extends StatefulWidget {
   @override
@@ -19,10 +20,9 @@ class _UniversityPageState extends State<UniversityPage> {
   }
 
   Future<void> loadUniversityData() async {
-    final String jsonString =
-    await rootBundle.loadString('assets/api/university.json');
-    print("Trying to load JSON");
-    print(jsonString);
+    final String jsonString = await rootBundle.loadString(
+      'assets/api/university.json',
+    );
     final Map<String, dynamic> jsonMap = json.decode(jsonString);
     final List<dynamic> jsonList = jsonMap['universities'];
 
@@ -35,9 +35,7 @@ class _UniversityPageState extends State<UniversityPage> {
 
   void _filter(String query) {
     setState(() {
-      filtered = _universities
-          .where((u) => u.name.contains(query))
-          .toList();
+      filtered = _universities.where((u) => u.name.contains(query)).toList();
     });
   }
 
@@ -65,46 +63,37 @@ class _UniversityPageState extends State<UniversityPage> {
 
           selectedItemColor: Colors.blue,
           unselectedItemColor: Colors.grey,
-          backgroundColor: Colors.transparent, // چون رنگ تو Container هست
-          elevation: 0, // از خود BottomNavigationBar نمی‌خوایم سایه بخوره
+          backgroundColor: Colors.transparent,
+          // چون رنگ تو Container هست
+          elevation: 0,
+          // از خود BottomNavigationBar نمی‌خوایم سایه بخوره
           type: BottomNavigationBarType.fixed,
           iconSize: 30,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(height: 18),
-                    Icon(Icons.settings),
-                  ],
-                ),
-                label: "",
+          items: const [
+            BottomNavigationBarItem(
+              icon: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [SizedBox(height: 18), Icon(Icons.settings)],
               ),
-              BottomNavigationBarItem(
-                icon: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(height: 18),
-                    Icon(Icons.home),
-                  ],
-                ),
-                label: "",
+              label: "",
+            ),
+            BottomNavigationBarItem(
+              icon: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [SizedBox(height: 18), Icon(Icons.home)],
               ),
-              BottomNavigationBarItem(
-                icon: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(height: 18),
-                    Icon(Icons.person),
-                  ],
-                ),
-                label: "",
+              label: "",
+            ),
+            BottomNavigationBarItem(
+              icon: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [SizedBox(height: 18), Icon(Icons.person)],
               ),
-            ],
+              label: "",
+            ),
+          ],
         ),
       ),
-
-
 
       body: SafeArea(
         child: Padding(
@@ -112,61 +101,60 @@ class _UniversityPageState extends State<UniversityPage> {
           child: Column(
             children: [
               // جستجو و فلش
-          Row(
-          children: [
-          Expanded(
-          child: Container(
-            height: 45,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.indigo),
-              borderRadius: BorderRadius.circular(25),
-            ),
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: TextField(
-              onChanged: _filter,
-              textDirection: TextDirection.rtl, //
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 45,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.indigo),
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: TextField(
+                        onChanged: _filter,
+                        textDirection: TextDirection.rtl, //
 
-              decoration: InputDecoration(
-                hintTextDirection: TextDirection.rtl,
-                hintText: "چیزی برای جستجو وارد کنید",
-                border: InputBorder.none,
-                icon: Icon(Icons.search, color: Colors.indigo),
+                        decoration: InputDecoration(
+                          hintTextDirection: TextDirection.rtl,
+                          hintText: "چیزی برای جستجو وارد کنید",
+                          border: InputBorder.none,
+                          icon: Icon(Icons.search, color: Colors.indigo),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ),
-        ),
-        ],
-      ),
 
               const SizedBox(height: 20),
-        const Align(
-          alignment: Alignment.center,
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Text(
-              "لطفا یک دانشگاه انتخاب کنید.",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+              const Align(
+                alignment: Alignment.center,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Text(
+                    "لطفا یک دانشگاه انتخاب کنید.",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                    textDirection: TextDirection.rtl,
+                  ),
+                ),
               ),
-              textAlign: TextAlign.center,
-              textDirection: TextDirection.rtl,
-            ),
-          ),
-        ),
 
               const SizedBox(height: 10),
               Expanded(
                 child: Directionality(
-                  textDirection: TextDirection.rtl, // آیتم‌ها از راست شروع می‌شوند
+                  textDirection: TextDirection.rtl,
+                  // آیتم‌ها از راست شروع می‌شوند
                   child: GridView.builder(
                     itemCount: filtered.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      childAspectRatio: 1.3,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          childAspectRatio: 1.3,
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 12,
+                        ),
                     itemBuilder: (context, index) {
                       final university = filtered[index];
 
@@ -199,7 +187,9 @@ class _UniversityPageState extends State<UniversityPage> {
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 16,
-                                  fontWeight: FontWeight.normal, // تغییر وزن فونت در حالت hover
+                                  fontWeight:
+                                      FontWeight
+                                          .normal, // تغییر وزن فونت در حالت hover
                                 ),
                               ),
                             ],
@@ -209,14 +199,11 @@ class _UniversityPageState extends State<UniversityPage> {
                     },
                   ),
                 ),
-              )
-
-              ,
+              ),
             ],
           ),
         ),
       ),
-
     );
   }
 }

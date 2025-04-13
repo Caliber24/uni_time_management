@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
+
 import 'SelectUniver.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -18,25 +20,15 @@ class SplashScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-
             Container(
-
               child: Center(
-                child: Image.asset(
-                  'assets/1.png',
-                  width: 150,
-                  height: 150,
-                ),
+                child: Image.asset('assets/1.png', width: 150, height: 150),
               ),
             ),
             SizedBox(height: 40),
             Text(
               "نرم افزار نمایش واحد",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 18),
             ),
           ],
         ),
