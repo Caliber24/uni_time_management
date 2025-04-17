@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:uni_time_management/page/FilterPage.dart';
 
 class ShowProfSchedule extends StatefulWidget {
   @override
@@ -14,8 +16,21 @@ class _ShowProfSchedule extends State<ShowProfSchedule> {
   ScrollController _horizontalScrollController = ScrollController();
   TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  bool _useResponsiveLayout =
-      true; // Toggle between table and responsive layout
+  bool _useResponsiveLayout = true;
+
+  // مدیریت فیلترهای ستونی و وضعیت
+  List<String> selectedColumns = [
+    'day',
+    'course_name',
+    'professor_name',
+    'time',
+    'status',
+    'exam_date',
+    'department_code',
+    'university_name',
+    'professor_id',
+  ]; // ستون‌های پیش‌فرض
+  String selectedStatus = 'همه کلاس‌ها'; // وضعیت پیش‌فرض
 
   final Map<String, int> _dayOrder = {
     'شنبه': 0,
@@ -32,7 +47,6 @@ class _ShowProfSchedule extends State<ShowProfSchedule> {
     final data = await json.decode(response);
     setState(() {
       facultySchedule = data['faculty_schedule'];
-
     });
   }
 
@@ -57,20 +71,51 @@ class _ShowProfSchedule extends State<ShowProfSchedule> {
     });
   }
 
+  void _openFilterPage() {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (context) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+          child: Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: EdgeInsets.zero,
+            child: FilterPage(
+              selectedColumns: selectedColumns,
+              selectedStatus: selectedStatus,
+              onApplyFilters: (newColumns, newStatus) {
+                setState(() {
+                  selectedColumns = newColumns;
+                  selectedStatus = newStatus;
+                });
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   List<Map<String, dynamic>> filterScheduleBySelectedDays() {
     List<Map<String, dynamic>> formatSchedule =
         facultySchedule
             .map<Map<String, dynamic>>(
               (schedule) => {
-                'course_code': schedule['course_code'] ?? '٣١٤٦',
-                'time': schedule['time'] ?? '٨:٠٠ - ١٠:٠٠',
-                'professor_name':
-                    schedule['professor_name'] ?? 'دکتر ابراهیم صحافی',
-                'day': schedule['day'] ?? 'شنبه',
-                'status': schedule['status'] ?? 'برگزار',
+                'day': schedule['day'] ?? 'تعیین نشده',
+                'course_name': schedule['course_name'] ?? 'تعیین نشده',
+                'professor_name': schedule['professor_name'] ?? 'تعیین نشده',
+                'time': schedule['time'] ?? 'تعیین نشده',
+                'status': schedule['status'] ?? 'تعیین نشده',
+                'exam_date': schedule['exam_date'] ?? 'تعیین نشده',
+                'department_code': schedule['department_code'] ?? 'تعیین نشده',
+                'university_name': schedule['university_name'] ?? 'تعیین نشده',
+                'professor_id': schedule['professor_id'] ?? 'تعیین نشده',
               },
             )
             .toList();
+
+    // اعمال فیلتر روزهای انتخاب‌شده
     if (selectedDays.isNotEmpty) {
       formatSchedule =
           formatSchedule
@@ -78,6 +123,7 @@ class _ShowProfSchedule extends State<ShowProfSchedule> {
               .toList();
     }
 
+    // اعمال فیلتر جستجو
     if (_searchQuery.isNotEmpty) {
       formatSchedule =
           formatSchedule
@@ -89,6 +135,21 @@ class _ShowProfSchedule extends State<ShowProfSchedule> {
               .toList();
     }
 
+    // اعمال فیلتر وضعیت
+    if (selectedStatus != 'همه کلاس‌ها') {
+      formatSchedule =
+          formatSchedule
+              .where(
+                (schedule) =>
+                    schedule['status'] ==
+                    (selectedStatus == 'فقط در حال برگزاری‌ها'
+                        ? 'برگزار'
+                        : 'لغو'),
+              )
+              .toList();
+    }
+
+    // مرتب‌سازی بر اساس روز و زمان
     formatSchedule.sort((a, b) {
       int dayOrderA = _dayOrder[a['day']] ?? 5;
       int dayOrderB = _dayOrder[b['day']] ?? 5;
@@ -112,71 +173,78 @@ class _ShowProfSchedule extends State<ShowProfSchedule> {
   Widget build(BuildContext context) {
     final filteredSchedule = filterScheduleBySelectedDays();
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child:
-            facultySchedule.isEmpty
-                ? Center(child: CircularProgressIndicator())
-                : SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      SizedBox(height: 20),
-                      // Row containing back button and search field
-                      Row(
+      body:
+          facultySchedule.isEmpty
+              ? Center(child: CircularProgressIndicator())
+              : Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: SingleChildScrollView(
+                      child: Column(
                         children: [
-                          // Back button
-                          BackButtonWidget(),
-                          SizedBox(
-                            width: 12,
-                          ), // Space between button and search field
-                          // Search field
-                          SearchWidget(
-                            searchQuery: _searchQuery,
-                            controller: _searchController,
+                          SizedBox(height: 50),
+                          Row(
+                            children: [
+                              BackButtonWidget(),
+                              SizedBox(width: 12),
+                              SearchWidget(
+                                searchQuery: _searchQuery,
+                                controller: _searchController,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Wrap(
+                            spacing: 8.0,
+                            runSpacing: 8.0,
+                            direction: Axis.horizontal,
+                            textDirection: TextDirection.rtl,
+                            alignment: WrapAlignment.center,
+                            children: [
+                              _buildDayButton('شنبه'),
+                              _buildDayButton('یکشنبه'),
+                              _buildDayButton('دوشنبه'),
+                              _buildDayButton('سه‌شنبه'),
+                              _buildDayButton('چهارشنبه'),
+                            ],
+                          ),
+                          SizedBox(height: 20),
+                          TableScheduleWidget(
+                            filteredSchedule: filteredSchedule,
+                            selectedColumns: selectedColumns,
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      // بخش انتخاب روز ها
-                      Wrap(
-                        spacing: 8.0,
-                        runSpacing: 8.0,
-                        direction: Axis.horizontal,
-                        textDirection: TextDirection.rtl,
-                        alignment: WrapAlignment.center,
-                        children: [
-                          _buildDayButton('شنبه'),
-                          _buildDayButton('یکشنبه'),
-                          _buildDayButton('دوشنبه'),
-                          _buildDayButton('سه‌شنبه'),
-                          _buildDayButton('چهارشنبه'),
-                        ],
-                      ),
-
-                      SizedBox(height: 20),
-
-                      // Search results count
-                      // if (_searchQuery.isNotEmpty)
-                      //   Padding(
-                      //     padding: const EdgeInsets.only(bottom: 8.0),
-                      //     child: Directionality(
-                      //       textDirection: TextDirection.rtl,
-                      //       child: Text(
-                      //         'نتایج جستجو برای "${_searchQuery}": ${filteredSchedule.length} مورد',
-                      //         style: TextStyle(
-                      //           fontWeight: FontWeight.bold,
-                      //           fontSize: 14,
-                      //         ),
-                      //       ),
-                      //     ),
-                      //   ),
-                      TableScheduleWidget(filteredSchedule: filteredSchedule),
-                    ],
+                    ),
                   ),
-                ),
-      ),
-      bottomNavigationBar: // Bottom navigation
-          Container(
+                  Positioned(
+                    left: 25,
+                    bottom: 20,
+                    child: Material(
+                      borderRadius: BorderRadius.circular(100),
+                      child: InkWell(
+                        onTap: _openFilterPage,
+                        child: Container(
+                          height: 50,
+                          width: 50,
+                          padding: EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Color(0xFF00137B),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.filter_alt_sharp,
+                            color: Colors.white,
+                            size: 30,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+      bottomNavigationBar: Container(
         height: 60,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -204,7 +272,6 @@ class _ShowProfSchedule extends State<ShowProfSchedule> {
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: isSelected ? Color(0xff1a2b8a) : Colors.white,
-        minimumSize: Size(80, 40),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20.0),
         ),
@@ -241,14 +308,13 @@ class BackButtonWidget extends StatelessWidget {
       width: 50,
       height: 50,
       decoration: BoxDecoration(
-        color: Color(0xFF00137B), // Deep blue color
+        color: Color(0xFF00137B),
         shape: BoxShape.circle,
       ),
       child: IconButton(
         icon: Icon(Icons.arrow_back, color: Colors.white, size: 28),
         padding: EdgeInsets.zero,
         onPressed: () {
-          // Add your back button functionality here
           Navigator.pop(context);
         },
       ),
@@ -304,155 +370,67 @@ class SearchWidget extends StatelessWidget {
 }
 
 class TableScheduleWidget extends StatelessWidget {
-  const TableScheduleWidget({Key? key, required this.filteredSchedule})
-    : super(key: key);
+  const TableScheduleWidget({
+    Key? key,
+    required this.filteredSchedule,
+    required this.selectedColumns,
+  }) : super(key: key);
 
   final List<Map<String, dynamic>> filteredSchedule;
+  final List<String> selectedColumns;
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
+
+    // تعریف ستون‌های ممکن و نگاشت آن‌ها به نام‌های نمایشی
+    final Map<String, String> columnLabels = {
+      'day': 'روز',
+      'course_name': 'عنوان درس',
+      'professor_name': 'نام استاد',
+      'time': 'ساعت برگزاری',
+      'status': 'وضعیت',
+      'exam_date': 'تاریخ امتحان',
+      'department_code': 'کد رشته',
+      'university_name': 'نام دانشگاه',
+      'professor_id': 'کد استاد',
+    };
+
+    // فیلتر کردن ستون‌های انتخاب‌شده
+    final List<DataColumn> columns =
+        selectedColumns
+            .where((col) => columnLabels.containsKey(col))
+            .map((col) => DataColumn(label: Text(columnLabels[col]!,),columnWidth: FixedColumnWidth(100)))
+            .toList();
+
     return Directionality(
       textDirection: TextDirection.rtl,
-
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Container(
-
           child: DataTable(
-            headingRowColor: MaterialStatePropertyAll(Color(0xFF2E3BAB)),
+            headingRowColor: MaterialStatePropertyAll(Color(0xFF636DC5)),
             dataRowMaxHeight: 50,
-            columnSpacing: 8,
-
+            columnSpacing: 16,
             dataRowMinHeight: 30,
-            border: TableBorder.all(color: Color(0xFF6B74C0)),
-            columns: [
-              DataColumn(label: Text('روز',),),
-              DataColumn(label: Text('کد درس')),
-              DataColumn(label: Text('نام استاد')),
-              DataColumn(label: Text('ساعت برگزاری')),
-              DataColumn(label: Text('وضعیت')),
-            ],
-            rows: [
-              ...filteredSchedule.map((schedule) {
-                return DataRow(
-                  cells: [
-                    DataCell(Text(schedule['day'] ?? 'تعیین نشده')),
-                    DataCell(Text(schedule['course_code'] ?? 'تعیین نشده')),
-                    DataCell(Text(schedule['professor_name'] ?? 'تعیین نشده')),
-                    DataCell(Text(schedule['time'] ?? 'تعیین نشده')),
-                    DataCell(Text(schedule['status'] ?? 'برگزار')),
-                  ],
-                );
-              }),
-            ],
+            border: TableBorder.all(color: Color(0xFF878FD6)),
+            columns: columns,
+            rows:
+                filteredSchedule.map((schedule) {
+                  return DataRow(
+                    cells:
+                        selectedColumns
+                            .where((col) => columnLabels.containsKey(col))
+                            .map(
+                              (col) =>
+                                  DataCell(Tooltip(message: schedule[col],child: Text(schedule[col] ?? 'تعیین نشده', overflow: TextOverflow.ellipsis,))),
+                            )
+                            .toList(),
+                  );
+                }).toList(),
           ),
         ),
       ),
     );
   }
 }
-
-//     return Directionality(
-//       textDirection: TextDirection.rtl,
-//       child:
-//           filteredSchedule.isEmpty
-//               ? Center(
-//                 child: Text(
-//                   'هیچ نتیجه‌ای یافت نشد!',
-//                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-//                 ),
-//               )
-//               : Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   _buildRow(
-//                     isHeader: true,
-//                     data: {
-//                       'day': 'روز',
-//                       'course_code': 'کد درس',
-//                       'professor_name': 'نام استاد',
-//                       'time': 'ساعت برگزاری',
-//                       'status': 'وضعیت',
-//                     },
-//                   ),
-//                   ...filteredSchedule.map((schedule) {
-//                     return _buildRow(data: schedule);
-//                   }).toList(),
-//                 ],
-//               ),
-//     );
-//   }
-//
-//   Widget _buildRow({
-//     required Map<String, dynamic> data,
-//     bool isHeader = false,
-//   }) {
-//     final TextStyle headerStyle = TextStyle(
-//       fontWeight: FontWeight.bold,
-//       color: Colors.white,
-//       fontSize: 14,
-//     );
-//
-//     final TextStyle cellStyle = TextStyle(
-//       fontSize: 14,
-//       fontWeight: FontWeight.w400,
-//       color: Colors.black,
-//     );
-//
-//     final bool isCancelled = data['status'] == 'لغو';
-//
-//     return Container(
-//       color: isHeader ? Color(0xFF535DB0) : Colors.transparent,
-//       child: Row(
-//         children: [
-//           _buildCell(data['day'] ?? 'تعیین نشده', 80, isHeader ? headerStyle : cellStyle),
-//           _buildCell(
-//             data['course_code'] ?? 'تعیین نشده',
-//             80,
-//             isHeader ? headerStyle : cellStyle,
-//           ),
-//           _buildCell(
-//             data['professor_name'] ?? 'تعیین نشده',
-//             140,
-//             isHeader ? headerStyle : cellStyle,
-//           ),
-//           _buildCell(
-//             data['time'] ?? 'تعیین نشده',
-//             100,
-//             isHeader ? headerStyle : cellStyle,
-//           ),
-//           _buildCell(
-//             data['status'] ?? 'تعیین نشده',
-//             80,
-//             isHeader
-//                 ? headerStyle
-//                 : cellStyle.copyWith(
-//                   color: isCancelled ? Colors.red : Colors.black,
-//                   fontWeight: isCancelled ? FontWeight.bold : FontWeight.w400,
-//                 ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-//
-//   Widget _buildCell(String text, double width, TextStyle style) {
-//     return Container(
-//       width: width,
-//       padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-//       decoration: BoxDecoration(
-//         border: Border(
-//           right: BorderSide(color: Color(0xFFA7B0F8)),
-//           bottom: BorderSide(color: Color(0xFFA7B0F8)),
-//         ),
-//       ),
-//       child: Text(
-//         text,
-//         textAlign: TextAlign.center,
-//         overflow: TextOverflow.ellipsis,
-//         style: style,
-//       ),
-//     );
-//   }
-// }
