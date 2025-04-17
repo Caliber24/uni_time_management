@@ -11,6 +11,8 @@ class ShowProfSchedule extends StatefulWidget {
 }
 
 class _ShowProfSchedule extends State<ShowProfSchedule> {
+  String? selectedSemester; // ترم انتخاب‌شده، null به معنی "همه ترم‌ها"
+  List<String> availableSemesters = []; // لیست ترم‌های موجود
   List<String> selectedDays = [];
   List<dynamic> facultySchedule = [];
   ScrollController _horizontalScrollController = ScrollController();
@@ -47,6 +49,13 @@ class _ShowProfSchedule extends State<ShowProfSchedule> {
     final data = await json.decode(response);
     setState(() {
       facultySchedule = data['faculty_schedule'];
+
+      availableSemesters =
+          facultySchedule
+              .map((schedule) => schedule['semester'] as String)
+              .toSet()
+              .toList()
+            ..sort();
     });
   }
 
@@ -76,20 +85,25 @@ class _ShowProfSchedule extends State<ShowProfSchedule> {
       context: context,
       barrierColor: Colors.black.withOpacity(0.5),
       builder: (context) {
-        return BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-          child: Dialog(
-            backgroundColor: Colors.transparent,
-            insetPadding: EdgeInsets.zero,
-            child: FilterPage(
-              selectedColumns: selectedColumns,
-              selectedStatus: selectedStatus,
-              onApplyFilters: (newColumns, newStatus) {
-                setState(() {
-                  selectedColumns = newColumns;
-                  selectedStatus = newStatus;
-                });
-              },
+        return GestureDetector(
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+            child: Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding: EdgeInsets.zero,
+              child: FilterPage(
+                selectedColumns: selectedColumns,
+                selectedStatus: selectedStatus,
+                onApplyFilters: (newColumns, newStatus) {
+                  setState(() {
+                    selectedColumns = newColumns;
+                    selectedStatus = newStatus;
+                  });
+                },
+              ),
             ),
           ),
         );
@@ -97,7 +111,7 @@ class _ShowProfSchedule extends State<ShowProfSchedule> {
     );
   }
 
-  List<Map<String, dynamic>> filterScheduleBySelectedDays() {
+  List<Map<String, dynamic>> filterSchedule() {
     List<Map<String, dynamic>> formatSchedule =
         facultySchedule
             .map<Map<String, dynamic>>(
@@ -111,6 +125,7 @@ class _ShowProfSchedule extends State<ShowProfSchedule> {
                 'department_code': schedule['department_code'] ?? 'تعیین نشده',
                 'university_name': schedule['university_name'] ?? 'تعیین نشده',
                 'professor_id': schedule['professor_id'] ?? 'تعیین نشده',
+                'semester': schedule['semester'] ?? 'تعیین نشده',
               },
             )
             .toList();
@@ -120,6 +135,13 @@ class _ShowProfSchedule extends State<ShowProfSchedule> {
       formatSchedule =
           formatSchedule
               .where((schedule) => selectedDays.contains(schedule['day']))
+              .toList();
+    }
+
+    if (selectedSemester != null) {
+      formatSchedule =
+          formatSchedule
+              .where((schedule) => schedule['semester'] == selectedSemester)
               .toList();
     }
 
@@ -171,7 +193,7 @@ class _ShowProfSchedule extends State<ShowProfSchedule> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredSchedule = filterScheduleBySelectedDays();
+    final filteredSchedule = filterSchedule();
     return Scaffold(
       body:
           facultySchedule.isEmpty
@@ -200,7 +222,7 @@ class _ShowProfSchedule extends State<ShowProfSchedule> {
                             runSpacing: 8.0,
                             direction: Axis.horizontal,
                             textDirection: TextDirection.rtl,
-                            alignment: WrapAlignment.center,
+                            alignment: WrapAlignment.start,
                             children: [
                               _buildDayButton('شنبه'),
                               _buildDayButton('یکشنبه'),
@@ -209,6 +231,8 @@ class _ShowProfSchedule extends State<ShowProfSchedule> {
                               _buildDayButton('چهارشنبه'),
                             ],
                           ),
+                          SizedBox(height: 20),
+                          buildSemesterSelector(),
                           SizedBox(height: 20),
                           TableScheduleWidget(
                             filteredSchedule: filteredSchedule,
@@ -249,9 +273,9 @@ class _ShowProfSchedule extends State<ShowProfSchedule> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavButton(Icons.settings_input_component, 'تعیین نشده'),
-            _buildNavButton(Icons.home, 'تعیین نشده'),
-            _buildNavButton(Icons.person_outline, 'تعیین نشده'),
+            buildNavButton(Icons.settings_input_component, 'تعیین نشده'),
+            buildNavButton(Icons.home, 'تعیین نشده'),
+            buildNavButton(Icons.person_outline, 'تعیین نشده'),
           ],
         ),
       ),
@@ -288,7 +312,140 @@ class _ShowProfSchedule extends State<ShowProfSchedule> {
     );
   }
 
-  Widget _buildNavButton(IconData icon, String label) {
+  Widget buildSemesterSelector() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+      child: Directionality(
+        textDirection: TextDirection.rtl, // اعمال RTL برای کل ویجت
+        child: Container(
+          width: 200,
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Color(0xFF1A2B8A), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Center(
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: selectedSemester,
+                // مقدار انتخاب‌شده
+                hint: Padding(
+                  padding: const EdgeInsets.only(right: 12.0), // فاصله از راست
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end, // تراز به راست
+                    children: [
+                      Text(
+                        'انتخاب ترم',
+                        textAlign: TextAlign.right, // اطمینان از راست‌چین بودن
+                        style: TextStyle(
+                          color: Color(0xFF1A2B8A),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Icon(
+                        Icons.calendar_today,
+                        color: Color(0xFF1A2B8A),
+                        size: 20,
+                      ),
+                    ],
+                  ),
+                ),
+                isExpanded: true,
+                icon: Padding(
+                  padding: const EdgeInsets.only(left: 12.0),
+                  child: Icon(
+                    Icons.arrow_drop_down,
+                    color: Color(0xFF1A2B8A),
+                    size: 28,
+                  ),
+                ),
+                style: TextStyle(
+                  color: Color(0xFF1A2B8A),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+                dropdownColor: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                elevation: 4,
+                items: [
+                  // آیتم "همه ترم‌ها" با مقدار null
+                  DropdownMenuItem<String>(
+                    value: null,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 12.0),
+                      // فاصله از راست
+                      child: Directionality(
+                        textDirection: TextDirection.rtl,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start, // تراز به راست
+                          children: [
+                            Text(
+                              'همه ترم‌ها',
+                              textAlign: TextAlign.right,
+                              // اطمینان از راست‌چین بودن
+                              style: TextStyle(
+                                color: Color(0xFF1A2B8A),
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // سایر ترم‌ها
+                  ...availableSemesters.map((semester) {
+                    return DropdownMenuItem<String>(
+                      value: semester,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 12.0),
+                        // فاصله از راست
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          // تراز به راست
+                          children: [
+                            Text(
+                              semester,
+                              textAlign: TextAlign.right,
+                              // اطمینان از راست‌چین بودن
+                              style: TextStyle(
+                                color: Color(0xFF1A2B8A),
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    selectedSemester = value; // به‌روزرسانی مقدار انتخاب‌شده
+                    print('Selected semester: $selectedSemester'); // برای دیباگ
+                  });
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildNavButton(IconData icon, String label) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -400,7 +557,12 @@ class TableScheduleWidget extends StatelessWidget {
     final List<DataColumn> columns =
         selectedColumns
             .where((col) => columnLabels.containsKey(col))
-            .map((col) => DataColumn(label: Text(columnLabels[col]!,),columnWidth: FixedColumnWidth(100)))
+            .map(
+              (col) => DataColumn(
+                label: Text(columnLabels[col]!),
+                columnWidth: FixedColumnWidth(100),
+              ),
+            )
             .toList();
 
     return Directionality(
@@ -422,8 +584,15 @@ class TableScheduleWidget extends StatelessWidget {
                         selectedColumns
                             .where((col) => columnLabels.containsKey(col))
                             .map(
-                              (col) =>
-                                  DataCell(Tooltip(message: schedule[col],child: Text(schedule[col] ?? 'تعیین نشده', overflow: TextOverflow.ellipsis,))),
+                              (col) => DataCell(
+                                Tooltip(
+                                  message: schedule[col],
+                                  child: Text(
+                                    schedule[col] ?? 'تعیین نشده',
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
                             )
                             .toList(),
                   );
