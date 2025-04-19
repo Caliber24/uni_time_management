@@ -119,7 +119,7 @@ class _UniversityPageState extends State<UniversityPage> {
                         textDirection: TextDirection.rtl,
                         decoration: InputDecoration(
                           hintTextDirection: TextDirection.rtl,
-                          hintText: "چیزی برای جستجو وارد کنید",
+                          hintText: "نام دانشگاه را وارد کنید",
                           border: InputBorder.none,
                           icon: Icon(Icons.search, color: Colors.indigo),
                         ),

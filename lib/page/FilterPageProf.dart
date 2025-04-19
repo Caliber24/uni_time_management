@@ -29,14 +29,15 @@ class _FilterPageState extends State<FilterPage> {
   @override
   Widget build(BuildContext context) {
     final Map<String, String> columnLabels = {
-      'day': 'روز برگزاری',
-      'course_name': 'عنوان درس',
+      'day_name': 'روز برگزاری',
       'time': 'ساعت برگزاری',
       'status': 'وضعیت',
       'exam_date': 'تاریخ امتحان',
       'department_code': 'کد رشته',
       'university_name': 'نام دانشگاه',
       'professor_id': 'کد استاد',
+      'course_name': 'نام درس',
+      'professor_name': 'نام استاد',
     };
 
     return Stack(
@@ -91,36 +92,32 @@ class _FilterPageState extends State<FilterPage> {
                         spacing: 10,
                         runSpacing: 10,
                         alignment: WrapAlignment.end,
-                        children:
-                            columnLabels.entries.map((entry) {
-                              return FilterChip(
-                                checkmarkColor: Colors.lightGreen,
-                                selectedColor: Color(0xff1a2b8a),
-                                disabledColor: Colors.grey,
-                                label: Text(
-                                  entry.value,
-                                  style: TextStyle(
-                                    color:
-                                        _selectedColumns.contains(entry.key)
-                                            ? Colors.white
-                                            : Colors.black,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                selected: _selectedColumns.contains(
-                                  entry.key,
-                                ),
-                                onSelected: (selected) {
-                                  setState(() {
-                                    if (selected) {
-                                      _selectedColumns.add(entry.key);
-                                    } else {
-                                      _selectedColumns.remove(entry.key);
-                                    }
-                                  });
-                                },
-                              );
-                            }).toList(),
+                        children: columnLabels.entries.map((entry) {
+                          return FilterChip(
+                            checkmarkColor: Colors.lightGreen,
+                            selectedColor: Color(0xff1a2b8a),
+                            disabledColor: Colors.grey,
+                            label: Text(
+                              entry.value,
+                              style: TextStyle(
+                                color: _selectedColumns.contains(entry.key)
+                                    ? Colors.white
+                                    : Colors.black,
+                                fontSize: 14,
+                              ),
+                            ),
+                            selected: _selectedColumns.contains(entry.key),
+                            onSelected: (selected) {
+                              setState(() {
+                                if (selected) {
+                                  _selectedColumns.add(entry.key);
+                                } else {
+                                  _selectedColumns.remove(entry.key);
+                                }
+                              });
+                            },
+                          );
+                        }).toList(),
                       ),
                       const SizedBox(height: 20),
                       Directionality(
@@ -254,43 +251,39 @@ class _FilterPageState extends State<FilterPage> {
         borderRadius: BorderRadius.circular(12),
         elevation: 4,
         itemHeight: 50,
-        items:
-            ['همه کلاس‌ها', 'فقط در حال برگزاری‌ها', 'کلاس‌های لغو شده'].map((
-              status,
-            ) {
-              return DropdownMenuItem<String>(
-                value: status,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        status,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color:
-                              status == 'کلاس‌های لغو شده'
-                                  ? Colors.redAccent
-                                  : status == 'فقط در حال برگزاری‌ها'
-                                  ? Colors.green
-                                  : Color(0xFF1A2B8A),
-                        ),
-                      ),
-                      if (status == 'کلاس‌های لغو شده') ...[
-                        SizedBox(width: 8),
-                        Icon(Icons.cancel, color: Colors.redAccent, size: 18),
-                      ],
-                      if (status == 'فقط در حال برگزاری‌ها') ...[
-                        SizedBox(width: 8),
-                        Icon(Icons.check_circle, color: Colors.green, size: 18),
-                      ],
-                    ],
+        items: ['همه کلاس‌ها', 'فقط در حال برگزاری‌ها', 'کلاس‌های لغو شده'].map((status) {
+          return DropdownMenuItem<String>(
+            value: status,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    status,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: status == 'کلاس‌های لغو شده'
+                          ? Colors.redAccent
+                          : status == 'فقط در حال برگزاری‌ها'
+                          ? Colors.green
+                          : Color(0xFF1A2B8A),
+                    ),
                   ),
-                ),
-              );
-            }).toList(),
+                  if (status == 'کلاس‌های لغو شده') ...[
+                    SizedBox(width: 8),
+                    Icon(Icons.cancel, color: Colors.redAccent, size: 18),
+                  ],
+                  if (status == 'فقط در حال برگزاری‌ها') ...[
+                    SizedBox(width: 8),
+                    Icon(Icons.check_circle, color: Colors.green, size: 18),
+                  ],
+                ],
+              ),
+            ),
+          );
+        }).toList(),
         onChanged: (value) {
           setState(() {
             _selectedStatus = value!;

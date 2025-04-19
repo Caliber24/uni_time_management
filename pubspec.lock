@@ -139,6 +139,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.1"
+  persian_datetime_picker:
+    dependency: "direct main"
+    description:
+      name: persian_datetime_picker
+      sha256: "7ccbfd3a68dc89d405550f624e9fa590c914fed2aa2d48973c4f4400baab2e06"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.0"
+  shamsi_date:
+    dependency: "direct main"
+    description:
+      name: shamsi_date
+      sha256: "4614789ed11bfffe5ba0aa157a20f2857ab6328528401766e0d924e453c866bd"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.4"
   sky_engine:
     dependency: transitive
     description: flutter

@@ -1,34 +1,106 @@
 {
-    "departments": [
-      {
-        "department_code": "DEP001",
-        "department_name": "مهندسی کامپیوتر",
-        "university_id": 1,
-        "university_name": "دانشگاه خلیج فارس بوشهر"
-      },
-      {
-        "department_code": "DEP002",
-        "department_name": "مهندسی برق",
-        "university_id": 1,
-        "university_name": "دانشگاه خلیج فارس بوشهر"
-      },
-      {
-        "department_code": "DEP003",
-        "department_name": "مهندسی مکانیک",
-        "university_id": 1,
-        "university_name": "دانشگاه خلیج فارس بوشهر"
-      },
-      {
-        "department_code": "DEP004",
-        "department_name": "ریاضیات",
-        "university_id": 1,
-        "university_name": "دانشگاه خلیج فارس بوشهر"
-      },
-      {
-        "department_code": "DEP005",
-        "department_name": "فیزیک",
-        "university_id": 1,
-        "university_name": "دانشگاه خلیج فارس بوشهر"
-      }
-    ]
-  }
+  "departments": [
+    {
+      "department_id": 1,
+      "department_name": "مهندسی کامپیوتر",
+      "university_id": 1,
+      "department_code": "DEP001"
+    },
+    {
+      "department_id": 2,
+      "department_name": "مهندسی برق",
+      "university_id": 1,
+      "department_code": "DEP002"
+    },
+    {
+      "department_id": 3,
+      "department_name": "ریاضیات",
+      "university_id": 1,
+      "department_code": "DEP003"
+    },
+    {
+      "department_id": 4,
+      "department_name": "مهندسی عمران",
+      "university_id": 1,
+      "department_code": "DEP004"
+    },
+    {
+      "department_id": 5,
+      "department_name": "مهندسی الکترونیک",
+      "university_id": 1,
+      "department_code": "DEP005"
+    },
+    {
+      "department_id": 6,
+      "department_name": "مهندسی شیمی",
+      "university_id": 2,
+      "department_code": "DEP006"
+    },
+    {
+      "department_id": 7,
+      "department_name": "علوم کامپیوتر",
+      "university_id": 2,
+      "department_code": "DEP007"
+    },
+    {
+      "department_id": 8,
+      "department_name": "مهندسی مکانیک",
+      "university_id": 3,
+      "department_code": "DEP008"
+    },
+    {
+      "department_id": 9,
+      "department_name": "مهندسی صنایع",
+      "university_id": 6,
+      "department_code": "DEP009"
+    },
+    {
+      "department_id": 10,
+      "department_name": "مهندسی عمران",
+      "university_id": 4,
+      "department_code": "DEP010"
+    },
+    {
+      "department_id": 11,
+      "department_name": "مهندسی برق",
+      "university_id": 5,
+      "department_code": "DEP011"
+    },
+    {
+      "department_id": 12,
+      "department_name": "مهندسی مکانیک",
+      "university_id": 7,
+      "department_code": "DEP012"
+    },
+    {
+      "department_id": 13,
+      "department_name": "مهندسی کامپیوتر",
+      "university_id": 2,
+      "department_code": "DEP013"
+    },
+    {
+      "department_id": 14,
+      "department_name": "مهندسی عمران",
+      "university_id": 2,
+      "department_code": "DEP014"
+    },
+    {
+      "department_id": 15,
+      "department_name": "مهندسی برق",
+      "university_id": 2,
+      "department_code": "DEP015"
+    },
+    {
+      "department_id": 16,
+      "department_name": "مهندسی الکترونیک",
+      "university_id": 2,
+      "department_code": "DEP016"
+    },
+    {
+      "department_id": 17,
+      "department_name": "مهندسی مکانیک",
+      "university_id": 2,
+      "department_code": "DEP017"
+    }
+  ]
+}

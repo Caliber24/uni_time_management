@@ -1,7 +1,9 @@
-import 'package:uni_time_management/page/SelectUniver.dart';
-import 'package:flutter/material.dart';
 import 'dart:convert';
+
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:uni_time_management/page/SelectUniver.dart';
+import 'package:uni_time_management/page/ShowProfSchedule.dart';
 
 class ProfessorSchedulePage extends StatefulWidget {
   final int universityId;
@@ -21,9 +23,10 @@ class ProfessorSchedulePage extends StatefulWidget {
 
 class _ProfessorSchedulePageState extends State<ProfessorSchedulePage> {
   List<dynamic> _allSchedules = [];
-  Map<String, String> _departmentNames = {}; // department_code => department_name
+  Map<String, String> _departmentNames = {};
   String? _selectedDepartment;
   String? _selectedProfessor;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -32,25 +35,36 @@ class _ProfessorSchedulePageState extends State<ProfessorSchedulePage> {
   }
 
   Future<void> _loadSchedules() async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
-      final String jsonString =
-      await rootBundle.loadString('api/professors.json');
+      final String jsonString = await rootBundle.loadString('api/professors.json');
       final jsonData = json.decode(jsonString);
-
-      setState(() {
-        _allSchedules = jsonData['faculty_schedule']
+      // print(jsonData);
+      if (jsonData is Map<String, dynamic> && jsonData.containsKey('faculty_schedule')) {
+        List<dynamic> schedules = jsonData['faculty_schedule'];
+        print(widget.selectedTerm);
+        _allSchedules = schedules
             .where((schedule) =>
         schedule['university_id'] == widget.universityId &&
             schedule['semester'] == widget.selectedTerm)
             .toList();
 
+
         _departmentNames = {
           for (var s in _allSchedules)
-            s['department_code']: s['department_name']
+            s['department_code']: s['department_name'],
         };
-      });
+      } else {
+        print('Error: Invalid JSON structure');
+      }
     } catch (e) {
       print('Error loading schedules: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -73,7 +87,9 @@ class _ProfessorSchedulePageState extends State<ProfessorSchedulePage> {
         textDirection: TextDirection.rtl,
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Column(
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
             children: [
               const SizedBox(height: 20),
               Container(
@@ -103,7 +119,7 @@ class _ProfessorSchedulePageState extends State<ProfessorSchedulePage> {
               const SizedBox(height: 8),
               _buildDropdown(
                 value: _selectedDepartment,
-                hint: 'تمامی گروه‌های آموزشی',
+                hint: 'تمامی گروههای آموزشی',
                 items: _getDepartmentItems(),
                 onChanged: (value) {
                   setState(() {
@@ -112,7 +128,6 @@ class _ProfessorSchedulePageState extends State<ProfessorSchedulePage> {
                   });
                 },
               ),
-
               const SizedBox(height: 24),
 
               /// استاد
@@ -134,13 +149,11 @@ class _ProfessorSchedulePageState extends State<ProfessorSchedulePage> {
                   });
                 },
               ),
-
               const Spacer(),
-
               const SizedBox(height: 12),
               SizedBox(
-                width: double.infinity,
-                height: 60,
+                width: 180,
+                height: 50,
                 child: ElevatedButton(
                   onPressed: _applyFilters,
                   style: ElevatedButton.styleFrom(
@@ -167,7 +180,7 @@ class _ProfessorSchedulePageState extends State<ProfessorSchedulePage> {
     required String? value,
     required String hint,
     required List<DropdownMenuItem<String>> items,
-    required ValueChanged<String?> onChanged,
+    required ValueChanged<String?>? onChanged,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -190,20 +203,19 @@ class _ProfessorSchedulePageState extends State<ProfessorSchedulePage> {
 
   List<DropdownMenuItem<String>> _getDepartmentItems() {
     final departments = _departmentNames.entries.toList();
-
     return [
-      const DropdownMenuItem(value: null, child: Text('تمامی گروه‌های آموزشی')),
+      const DropdownMenuItem<String>(value: null, child: Text('تمامی گروههای آموزشی')),
       ...departments.map(
-            (entry) => DropdownMenuItem(
-          value: entry.key, // department_code
-          child: Text(entry.value), // department_name
+            (entry) => DropdownMenuItem<String>(
+          value: entry.key,
+          child: Text(entry.value),
         ),
-      )
+      ),
     ];
   }
 
   List<DropdownMenuItem<String>> _getProfessorItems() {
-    final professors = _allSchedules
+    List<String> professors = _allSchedules
         .where((schedule) =>
     _selectedDepartment == null ||
         schedule['department_code'] == _selectedDepartment)
@@ -212,24 +224,35 @@ class _ProfessorSchedulePageState extends State<ProfessorSchedulePage> {
         .toList();
 
     return [
-      const DropdownMenuItem(value: null, child: Text('انتخاب استاد')),
+      const DropdownMenuItem<String>(value: null, child: Text('انتخاب استاد')),
       ...professors.map(
-            (prof) => DropdownMenuItem(value: prof, child: Text(prof)),
-      )
+            (prof) => DropdownMenuItem<String>(value: prof, child: Text(prof)),
+      ),
     ];
   }
 
   void _applyFilters() {
-    final filtered = _allSchedules.where((schedule) {
-      final matchesDept = _selectedDepartment == null ||
-          schedule['department_code'] == _selectedDepartment;
-      final matchesProf = _selectedProfessor == null ||
-          schedule['professor_name'] == _selectedProfessor;
+    List<dynamic> filtered = _allSchedules.where((schedule) {
+      final matchesDept =
+          _selectedDepartment == null ||
+              schedule['department_name'] == _selectedDepartment;
+      final matchesProf =
+          _selectedProfessor == null ||
+              schedule['professor_name'] == _selectedProfessor;
       return matchesDept && matchesProf;
     }).toList();
 
-    print('Filtered: ${filtered.length}');
-    // می‌تونی اینجا نتایج رو نمایش بدی یا به صفحه دیگه بری
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ShowProfSchedule(
+          universityId: widget.universityId,
+          universityName: widget.universityName,
+          selectedSemester: widget.selectedTerm,
+          filteredSchedules: filtered,
+        ),
+      ),
+    );
   }
 
   Widget _buildBottomNavigationBar() {
@@ -245,9 +268,7 @@ class _ProfessorSchedulePageState extends State<ProfessorSchedulePage> {
         if (index == 1) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (context) => UniversityPage(),
-            ),
+            MaterialPageRoute(builder: (context) => UniversityPage()),
           );
         }
       },
@@ -276,6 +297,4 @@ class _ProfessorSchedulePageState extends State<ProfessorSchedulePage> {
       ],
     );
   }
-
-
 }
