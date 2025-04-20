@@ -117,8 +117,8 @@ class _ShowProfScheduleState extends State<ShowProfSchedule> {
       'exam_date': schedule['exam_date'] ?? 'تعیین نشده',
       'department_code': schedule['department_code'] ?? 'تعیین نشده',
       'university_name':
-      schedule['univeersity_name'] ?? 'تعیین نشده', // مدیریت اشتباه تایپی
-      'professor_id': schedule['professor_id'] ?? 'تعیین نشده',
+      schedule['university_name'] ?? 'تعیین نشده', // مدیریت اشتباه تایپی
+      'professor_id': schedule['professor_id' ] ?? 'تعیین نشده',
       'semester': schedule['semester'] ?? 'تعیین نشده',
     })
         .toList();
